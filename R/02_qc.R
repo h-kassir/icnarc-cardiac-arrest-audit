@@ -103,7 +103,7 @@ admissions %>%
 
 
 
-# CONSISTENCY CHECKS: -----------------------------------------------------
+# 3- CONSISTENCY CHECKS: -----------------------------------------------------
 
 # Check 1: hospital_expire_flag vs deathtime
 # If expire flag = 1, deathtime should be present and vice versa
@@ -155,7 +155,8 @@ consistency_dupes <- admissions %>%
 
 
 
-# ── 4. DISCREPANCY LOG ────────────────────────────────────────────
+
+# 4- DISCREPANCY LOG ------------------------------------------------------
 
 # Category 2: ICU admission days before hospital admission
 discrepancy_icu_intime <- consistency_icu_window %>%
@@ -211,6 +212,6 @@ discrepancy_log <- bind_rows(
 
 
 
-# Save Outputs: -----------------------------------------------------------
+# 5- Save Outputs: -----------------------------------------------------------
 
 write_csv(discrepancy_log, "outputs/discrepancy_log.csv")
