@@ -1,0 +1,2 @@
+subject_id,hadm_id,icd_code,icd_version,gender,anchor_age,admittime,dischtime,deathtime,admission_type,admission_location,discharge_location,hospital_expire_flag,race,marital_status,insurance,stay_id,first_careunit,intime,outtime,los,hospital_los,in_hospital_death
+10010471,29842315,I462,10,F,89,2155-12-02T19:36:00Z,2155-12-07T15:30:00Z,2155-12-07T15:30:00Z,EW EMER.,EMERGENCY ROOM,DIED,1,WHITE,WIDOWED,Medicare,32119961,Coronary Care Unit (CCU),2155-12-02T20:33:00Z,2155-12-07T18:19:18Z,4.907152777777778,4.829166666666667,TRUE
