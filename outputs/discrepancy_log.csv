@@ -1,0 +1,52 @@
+record_id,subject_id,hadm_id,check_type,variable,flag,severity,resolution
+1,10020187,26842957,Consistency,intime vs admittime,ICU admission recorded before hospital admission,High,Under investigation — likely MIMIC date-shift artefact; exclude from primary analysis
+2,10017492,27417763,Consistency,intime vs admittime,ICU admission recorded before hospital admission,High,Under investigation — likely MIMIC date-shift artefact; exclude from primary analysis
+3,10003400,23559586,Consistency,intime vs admittime,ICU admission recorded before hospital admission,High,Under investigation — likely MIMIC date-shift artefact; exclude from primary analysis
+4,10026406,25260176,Consistency,intime vs admittime,ICU admission recorded before hospital admission,High,Under investigation — likely MIMIC date-shift artefact; exclude from primary analysis
+5,10007818,22987108,Consistency,intime vs admittime,ICU admission recorded before hospital admission,High,Under investigation — likely MIMIC date-shift artefact; exclude from primary analysis
+6,10038081,20755971,Consistency,intime vs admittime,ICU admission recorded before hospital admission,High,Under investigation — likely MIMIC date-shift artefact; exclude from primary analysis
+7,10005909,20199380,Consistency,intime vs admittime,ICU admission recorded before hospital admission,High,Under investigation — likely MIMIC date-shift artefact; exclude from primary analysis
+8,10013049,22675517,Consistency,outtime vs dischtime,ICU discharge recorded before hospital discharge by >6 hours,High,Under investigation — likely MIMIC date-shift artefact; exclude from primary analysis
+9,10004457,23251352,Consistency,outtime vs dischtime,ICU discharge recorded before hospital discharge by >6 hours,High,Under investigation — likely MIMIC date-shift artefact; exclude from primary analysis
+10,10023239,28984460,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+11,10024043,25561728,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+12,10015860,27670224,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+13,10015860,22607171,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+14,10015860,22416954,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+15,10020740,23143086,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+16,10020740,23199774,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+17,10014354,24096336,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+18,10014354,26722126,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+19,10014354,20900955,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+20,10014354,22502504,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+21,10014354,26173805,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+22,10014354,27494880,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+23,10039708,27504040,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+24,10026406,25166559,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+25,10037928,22228639,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+26,10037928,28543425,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+27,10012853,22896692,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+28,10039997,21390688,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+29,10020306,26332470,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+30,10002930,25282382,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+31,10002930,28697806,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+32,10002930,20846853,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+33,10002930,22380825,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+34,10002930,23720373,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+35,10002930,20282368,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+36,10002930,28477649,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+37,10002428,28676446,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+38,10002428,25797028,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+39,10002428,26549334,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+40,10005348,29176490,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+41,10020740,29820177,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+42,10039708,22999601,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+43,10012853,20457729,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+44,10012853,26739864,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+45,10004457,25559382,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+46,10007795,27962747,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+47,10035631,29654498,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+48,10020306,28778757,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+49,10040025,27125816,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+50,10004457,21039249,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
+51,10004457,21216581,Completeness,discharge_location,Discharge location not recorded,Medium,Missing — would be queried back to submitting unit in a live audit
