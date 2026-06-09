@@ -1,0 +1,648 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{longtable,booktabs,array}
+\newcounter{none} % for unnumbered tables
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={In-Hospital Cardiac Arrest \& ICU Outcomes Audit},
+  pdfauthor={Hussein Kassir},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{In-Hospital Cardiac Arrest \& ICU Outcomes Audit}
+\usepackage{etoolbox}
+\makeatletter
+\providecommand{\subtitle}[1]{% add subtitle to \maketitle
+  \apptocmd{\@title}{\par {\large #1 \par}}{}{}
+}
+\makeatother
+\subtitle{Modelled on ICNARC National Cardiac Arrest Audit --- MIMIC-IV
+Demo Dataset}
+\author{Hussein Kassir}
+\date{2026-06-09}
+
+\begin{document}
+\maketitle
+
+{
+\setcounter{tocdepth}{2}
+\tableofcontents
+}
+\section{Executive Summary}\label{executive-summary}
+
+This report presents findings from an audit of in-hospital cardiac
+arrest and ICU outcomes, modelled on the methodology of ICNARC's
+National Cardiac Arrest Audit (NCAA) and Case Mix Programme (CMP). The
+audit was conducted using the MIMIC-IV Clinical Database Demo (v2.2), an
+openly available dataset of 100 de-identified critical care patients
+from Beth Israel Deaconess Medical Center, Boston.
+
+\textbf{Key findings:}
+
+\begin{itemize}
+\tightlist
+\item
+  One cardiac arrest case was identified in the demo dataset (ICD-10:
+  I462), admitted as an emergency to the Coronary Care Unit, with
+  in-hospital death confirmed.
+\item
+  Across the full ICU cohort of 100 patients (140 stays), overall
+  in-hospital mortality was \textbf{13\%}.
+\item
+  The Coronary Care Unit recorded the highest mortality rate at
+  \textbf{38.5\%}, followed by the Neuro Surgical ICU at
+  \textbf{33.3\%}.
+\item
+  ICU length of stay was the only statistically significant predictor of
+  in-hospital death in the risk model (OR 1.30, 95\% CI 1.12--1.58,
+  p=0.002).
+\item
+  51 data quality discrepancies were identified and logged, of which 9
+  were rated High severity and 42 Medium severity.
+\end{itemize}
+
+\begin{quote}
+\textbf{Note:} This audit was developed as a portfolio project to
+demonstrate clinical audit data management and analytical skills. The
+MIMIC-IV Demo dataset contains 100 patients and results are not
+statistically powered for clinical inference. The pipeline is designed
+to scale to the full MIMIC-IV dataset.
+\end{quote}
+
+\section{Background \& Methods}\label{background-methods}
+
+\subsection{Audit Scope}\label{audit-scope}
+
+This audit was designed to mirror the structure and objectives of
+ICNARC's National Cardiac Arrest Audit (NCAA), which monitors the
+incidence, care, and outcomes of in-hospital cardiac arrest across NHS
+hospitals in England, Wales, and Northern Ireland. A secondary analysis
+of broader ICU outcomes was conducted across the full cohort, modelled
+on ICNARC's Case Mix Programme (CMP).
+
+\subsection{Dataset}\label{dataset}
+
+The \textbf{MIMIC-IV Clinical Database Demo (v2.2)} was used as the data
+source. MIMIC-IV is a large, freely available database of de-identified
+health data from patients admitted to critical care units at Beth Israel
+Deaconess Medical Center between 2008 and 2019. The demo version
+contains 100 patients and is openly available via PhysioNet without
+credentialing requirements.
+
+\subsection{Cohort Definition}\label{cohort-definition}
+
+\textbf{Cardiac arrest cohort:}
+
+Patients were included if they had a recorded diagnosis of cardiac
+arrest using the following codes:
+
+\begin{itemize}
+\tightlist
+\item
+  ICD-10: I46, I460, I461, I462, I469
+\item
+  ICD-9: 4275
+\end{itemize}
+
+Patients were excluded if aged under 18 or flagged with a high-severity
+data quality discrepancy.
+
+\textbf{Full ICU cohort:}
+
+All patients with at least one ICU stay in the dataset were included in
+the secondary analysis, subject to the same age and QC exclusion
+criteria.
+
+\subsection{Outcome Measures}\label{outcome-measures}
+
+The primary outcome was \textbf{in-hospital mortality}, defined as
+\texttt{hospital\_expire\_flag\ =\ 1} in the admissions table. Secondary
+outcomes included ICU and hospital length of stay, care unit
+distribution, and admission type breakdown.
+
+\subsection{Analytical Pipeline}\label{analytical-pipeline}
+
+All data processing, quality control, cohort definition, and analysis
+were conducted in R (v4.x) using a reproducible, version-controlled
+pipeline maintained on GitHub. Data quality checks were modelled on
+ICNARC's discrepancy resolution process, with all flagged records logged
+with a severity rating and resolution status.
+
+\section{Data Quality Summary}\label{data-quality-summary}
+
+\subsection{Overview}\label{overview}
+
+Data quality checks were conducted across all four core tables:
+\texttt{patients}, \texttt{admissions}, \texttt{diagnoses\_icd}, and
+\texttt{icustays}. Three categories of checks were applied:
+completeness, plausibility, and consistency. All flagged records were
+logged in a structured discrepancy log with a severity rating and
+resolution status, replicating the query-raising process used in live
+clinical audits.
+
+\subsection{Completeness}\label{completeness}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1048}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2095}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0952}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.5905}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Table
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Variable
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\% Missing
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Interpretation
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+patients & dod & 69\% & Expected --- only populated for deaths \\
+admissions & deathtime & 94.5\% & Expected --- only populated for
+in-hospital deaths \\
+admissions & edregtime / edouttime & 33.8\% & Expected --- not all
+patients admitted via emergency department \\
+admissions & discharge\_location & 15.3\% & Flagged --- unknown
+discharge destination, audit-relevant \\
+admissions & marital\_status & 4.4\% & Minor gap, low audit relevance \\
+\end{longtable}
+}
+
+\subsection{Plausibility}\label{plausibility}
+
+No implausible values were identified for age, ICU length of stay, or
+admission/discharge dates. All 100 patients were adults (≥18), all ICU
+lengths of stay were positive, and no discharge dates preceded admission
+dates.
+
+\subsection{Consistency}\label{consistency}
+
+Four records showed death time recorded after discharge time by a few
+hours. Investigation revealed this reflects a known MIMIC data
+convention where discharge time is recorded as midnight (00:00:00) and
+death time is logged precisely later that evening. These were documented
+as known artefacts and excluded from the discrepancy log.
+
+Nine records were flagged for ICU stay timestamps falling outside the
+hospital admission window by more than six hours, likely reflecting
+date-shift artefacts in the MIMIC de-identification process.
+
+\subsection{Discrepancy Log Summary}\label{discrepancy-log-summary}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}llr@{}}
+\toprule\noalign{}
+Check Type & Severity & Records Flagged \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Consistency & High & 9 \\
+Completeness & Medium & 42 \\
+\end{longtable}
+}
+
+In a live audit setting, High severity discrepancies would be queried
+back to the submitting unit for clarification or correction before
+inclusion in analysis. Medium severity records would be flagged for
+review and included with a data quality caveat.
+
+\section{Cardiac Arrest Cohort}\label{cardiac-arrest-cohort}
+
+\subsection{Cohort identification}\label{cohort-identification}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}lr@{}}
+\toprule\noalign{}
+Step & N \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+All MIMIC-IV Demo patients & 100 \\
+Cardiac arrest ICD code identified & 1 \\
+Excluded --- under 18 & 0 \\
+Excluded --- high severity QC flag & 0 \\
+Final analysis cohort & 1 \\
+\end{longtable}
+}
+
+\subsection{Patient Profile}\label{patient-profile}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Variable & Value \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Gender & FALSE \\
+Age & 89 \\
+Admission Type & EW EMER. \\
+Admission Location & EMERGENCY ROOM \\
+Care Unit & Coronary Care Unit (CCU) \\
+ICU LOS (days) & 4.90715277777778 \\
+Hospital LOS (days) & 4.82916666666667 \\
+In-Hospital Death & Yes \\
+ICD Code & I462 \\
+\end{longtable}
+}
+
+\subsection{Findings \& Limitations}\label{findings-limitations}
+
+The single cardiac arrest case identified was a female patient aged 89,
+admitted as an emergency via the emergency department and managed in the
+Coronary Care Unit. In-hospital death was confirmed, with an ICU length
+of stay of 4.9 days and hospital length of stay of 4.8 days. The arrest
+was coded as ICD-10 I462 (cardiac arrest due to underlying cardiac
+condition).
+
+\begin{quote}
+\textbf{Limitation:} The MIMIC-IV Demo dataset contains only 100
+patients, yielding a single cardiac arrest case. Outcome statistics for
+this cohort are not meaningful at this scale. The identification,
+validation, and reporting pipeline is fully operational and designed to
+scale to the full MIMIC-IV dataset, which contains over 300,000 hospital
+admissions.
+\end{quote}
+
+\section{Full ICU Cohort Analysis}\label{full-icu-cohort-analysis}
+
+\subsection{Overview}\label{overview-1}
+
+A secondary analysis was conducted across all 100 patients with at least
+one ICU stay in the dataset, yielding 140 ICU stays. This analysis
+mirrors the Case Mix Programme's approach to benchmarking critical care
+outcomes across participating units.
+
+\subsection{In-Hospital Mortality}\label{in-hospital-mortality}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Metric & Value \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Total patients & 100 \\
+In-hospital deaths & 13 \\
+Survivors & 87 \\
+Mortality rate & 13\% \\
+\end{longtable}
+}
+
+\subsection{ICU Length of Stay}\label{icu-length-of-stay}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Metric & Value \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Mean ICU LOS (days) & 3.68 \\
+Median ICU LOS (days) & 2.16 \\
+Minimum ICU LOS (days) & 0.02 \\
+Maximum ICU LOS (days) & 20.5 \\
+\end{longtable}
+}
+
+The median ICU length of stay was 2.16 days, with considerable variation
+(range 0.02--20.5 days), reflecting the heterogeneity of case mix
+typical of a mixed critical care population.
+
+\subsection{Breakdown by Care Unit}\label{breakdown-by-care-unit}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.5104}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1042}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.0729}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1458}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1667}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Care Unit
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+ICU Stays
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Deaths
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Mortality (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Mean LOS (days)
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Medical Intensive Care Unit (MICU) & 29 & 6 & 20.7 & 4.02 \\
+Surgical Intensive Care Unit (SICU) & 29 & 3 & 10.3 & 2.83 \\
+Cardiac Vascular Intensive Care Unit (CVICU) & 25 & 0 & 0.0 & 2.22 \\
+Medical/Surgical Intensive Care Unit (MICU/SICU) & 23 & 3 & 13.0 &
+4.25 \\
+Trauma SICU (TSICU) & 16 & 2 & 12.5 & 4.07 \\
+Coronary Care Unit (CCU) & 13 & 5 & 38.5 & 5.43 \\
+Neuro Surgical Intensive Care Unit (Neuro SICU) & 3 & 1 & 33.3 & 6.33 \\
+Neuro Intermediate & 1 & 0 & 0.0 & 0.87 \\
+Neuro Stepdown & 1 & 0 & 0.0 & 7.70 \\
+\end{longtable}
+}
+
+The Coronary Care Unit recorded the highest mortality rate at 38.5\%,
+followed by the Neuro Surgical ICU at 33.3\%. The Cardiac Vascular ICU
+recorded zero deaths across 25 stays, likely reflecting a higher
+proportion of elective surgical admissions with lower baseline risk.
+
+\subsection{Breakdown by Age Band}\label{breakdown-by-age-band}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}lrrr@{}}
+\toprule\noalign{}
+Age Band & Patients & Deaths & Mortality (\%) \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+40-59 & 33 & 2 & 6.1 \\
+60-79 & 42 & 9 & 21.4 \\
+80 and over & 16 & 2 & 12.5 \\
+Under 40 & 9 & 0 & 0.0 \\
+\end{longtable}
+}
+
+Mortality was highest in the 60--79 age band at 21.4\%. The apparent
+lower mortality in the 80 and over group (12.5\%) may reflect survivor
+bias --- only the fittest older patients are admitted to ICU --- and
+should be interpreted with caution given the small sample size.
+
+\subsection{Breakdown by Admission
+Type}\label{breakdown-by-admission-type}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}lrrr@{}}
+\toprule\noalign{}
+Admission Type & Patients & Deaths & Mortality (\%) \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+EW EMER. & 46 & 6 & 13.0 \\
+URGENT & 22 & 4 & 18.2 \\
+SURGICAL SAME DAY ADMISSION & 14 & 0 & 0.0 \\
+OBSERVATION ADMIT & 11 & 2 & 18.2 \\
+ELECTIVE & 5 & 0 & 0.0 \\
+DIRECT EMER. & 2 & 1 & 50.0 \\
+\end{longtable}
+}
+
+Elective and surgical same-day admissions recorded zero mortality,
+consistent with their lower acuity. Direct emergency admissions had the
+highest mortality at 50\%, though this is based on only two patients and
+should not be interpreted as a reliable estimate.
+
+\section{Risk-Adjusted Outcomes}\label{risk-adjusted-outcomes}
+
+\subsection{Logistic Regression Model}\label{logistic-regression-model}
+
+A logistic regression model was fitted to identify predictors of
+in-hospital mortality across the full ICU cohort. Predictor variables
+were selected to reflect those used in ICNARC's risk prediction models:
+age, sex, admission type (emergency vs non-emergency), and ICU length of
+stay.
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.2736}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1038}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1038}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1132}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.0755}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1038}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1132}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1132}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Predictor
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Odds Ratio
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Std. Error
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Z Statistic
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+P Value
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+95\% CI Low
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+95\% CI High
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Significant
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Age (per year) & 1.038 & 0.023 & 1.600 & 0.110 & 0.994 & 1.091 & No \\
+Emergency admission & 2.910 & 0.882 & 1.211 & 0.226 & 0.613 & 22.477 &
+No \\
+Female sex & 0.363 & 0.787 & -1.287 & 0.198 & 0.064 & 1.537 & No \\
+ICU length of stay (per day) & 1.305 & 0.085 & 3.126 & 0.002 & 1.120 &
+1.576 & Yes \\
+\end{longtable}
+}
+
+\subsection{Key Findings}\label{key-findings}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{ICU length of stay} was the only statistically significant
+  predictor of in-hospital death (OR 1.30, 95\% CI 1.12--1.58, p=0.002).
+  Each additional day in ICU was associated with a 30\% increase in the
+  odds of in-hospital death, likely reflecting greater illness severity
+  in patients with prolonged stays.
+\item
+  \textbf{Age} showed a positive but non-significant association with
+  mortality (OR 1.04, p=0.11), consistent with the expected direction
+  but underpowered at this sample size.
+\item
+  \textbf{Emergency admission} was associated with higher odds of death
+  (OR 2.91) but with very wide confidence intervals (0.61--22.5),
+  reflecting insufficient statistical power.
+\item
+  \textbf{Female sex} showed a non-significant protective association
+  (OR 0.36, p=0.198).
+\end{itemize}
+
+\subsection{Observed vs Expected
+Mortality}\label{observed-vs-expected-mortality}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Metric & Value \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Observed deaths & 13 \\
+Expected deaths & 13.0 \\
+O/E ratio & 1.00 \\
+\end{longtable}
+}
+
+The observed-to-expected (O/E) ratio of 1.00 indicates perfect
+calibration of the model on this dataset. In a live audit context, an
+O/E ratio substantially above 1.0 would indicate higher-than-expected
+mortality and trigger a quality improvement review, while a ratio below
+1.0 would suggest better-than-expected performance. This mirrors the
+Risk-Adjusted Mortality Indicator (RAMI) used in ICNARC's Case Mix
+Programme.
+
+\begin{quote}
+\textbf{Note:} The O/E ratio here reflects in-sample model fit rather
+than external validation. In a scaled audit, the model would be trained
+on a derivation dataset and validated on a separate cohort.
+\end{quote}
+
+\section{Limitations \&
+Recommendations}\label{limitations-recommendations}
+
+\subsection{Limitations}\label{limitations}
+
+\textbf{Sample size:} The MIMIC-IV Demo dataset contains 100 patients,
+yielding a single cardiac arrest case. All statistics derived from this
+cohort should be interpreted as illustrative of the pipeline methodology
+rather than clinically meaningful findings. The full MIMIC-IV dataset
+contains over 300,000 hospital admissions and would provide adequate
+statistical power for a fully powered audit.
+
+\textbf{Single-centre data:} MIMIC-IV draws exclusively from Beth Israel
+Deaconess Medical Center in Boston. A national audit such as ICNARC's
+NCAA draws from hundreds of participating units across England, Wales,
+and Northern Ireland, enabling meaningful inter-unit benchmarking.
+Single-centre data cannot replicate this.
+
+\textbf{ICD coding limitations:} Cardiac arrest identification relied
+solely on ICD diagnostic codes. In clinical practice, coding
+completeness varies across units and cardiac arrest may be undercoded,
+particularly when it occurs as a complication rather than a primary
+diagnosis. A live audit would supplement ICD coding with direct data
+entry by clinical staff.
+
+\textbf{Risk model variables:} The logistic regression model included
+only four predictor variables. ICNARC's own risk prediction models
+incorporate a much richer set of physiological variables collected at
+ICU admission, including acute physiology scores, ventilation status,
+and primary diagnosis category. These variables were not included here
+due to the complexity of extracting and cleaning chartevents data within
+the scope of this project.
+
+\textbf{Date shifting:} MIMIC-IV applies date shifting to all timestamps
+as part of its de-identification process. This introduced apparent
+inconsistencies in some timestamp comparisons, particularly between ICU
+stay times and hospital admission windows. These were identified through
+QC checks and documented in the discrepancy log.
+
+\subsection{Recommendations}\label{recommendations}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Scale to full MIMIC-IV dataset} --- applying this pipeline to
+  the full dataset would yield a statistically powered cardiac arrest
+  cohort and enable meaningful benchmarking analysis.
+\item
+  \textbf{Enrich the risk model} --- incorporating physiological
+  variables from \texttt{chartevents} (e.g.~GCS, heart rate, blood
+  pressure at ICU admission) would produce a more clinically credible
+  risk adjustment model, closer to ICNARC's RAMI methodology.
+\item
+  \textbf{Automate discrepancy reporting} --- in a live audit setting,
+  the discrepancy log could be extended to generate automated query
+  letters to participating units, flagging specific records and
+  requesting clarification or correction.
+\item
+  \textbf{Extend to NCAA variables} --- where derivable from MIMIC-IV,
+  additional NCAA variables such as arrest rhythm (shockable vs
+  non-shockable) and ROSC status could be extracted from clinical notes
+  or procedure codes to more closely replicate the full NCAA dataset
+  specification.
+\end{enumerate}
+
+\end{document}

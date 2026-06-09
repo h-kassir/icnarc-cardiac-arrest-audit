@@ -1,0 +1,454 @@
+---
+title: "In-Hospital Cardiac Arrest & ICU Outcomes Audit"
+author: "Hussein Kassir"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    toc: true
+  html_document:
+    toc: true
+    toc_float: true
+    theme: flatly
+    highlight: tango
+    number_sections: true
+subtitle: "Modelled on ICNARC National Cardiac Arrest Audit — MIMIC-IV Demo Dataset"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+
+library(tidyverse)
+library(lubridate)
+library(broom)
+library(knitr)
+
+# Load all outputs
+cohort_final       <- read_csv("outputs/cohort_final.csv")
+discrepancy_log    <- read_csv("outputs/discrepancy_log.csv")
+care_unit_breakdown <- read_csv("outputs/care_unit_breakdown.csv")
+age_breakdown      <- read_csv("outputs/age_breakdown.csv")
+admission_breakdown <- read_csv("outputs/admission_breakdown.csv")
+model_results      <- read_csv("outputs/logistic_regression_results.csv")
+model_data         <- read_csv("outputs/model_data.csv")
+```
+
+# Executive Summary
+
+This report presents findings from an audit of in-hospital cardiac arrest 
+and ICU outcomes, modelled on the methodology of ICNARC's National Cardiac 
+Arrest Audit (NCAA) and Case Mix Programme (CMP). The audit was conducted 
+using the MIMIC-IV Clinical Database Demo (v2.2), an openly available 
+dataset of 100 de-identified critical care patients from Beth Israel 
+Deaconess Medical Center, Boston.
+
+**Key findings:**
+
+- One cardiac arrest case was identified in the demo dataset (ICD-10: I462),
+  admitted as an emergency to the Coronary Care Unit, with in-hospital death 
+  confirmed.
+- Across the full ICU cohort of 100 patients (140 stays), overall in-hospital 
+  mortality was **13%**.
+- The Coronary Care Unit recorded the highest mortality rate at **38.5%**, 
+  followed by the Neuro Surgical ICU at **33.3%**.
+- ICU length of stay was the only statistically significant predictor of 
+  in-hospital death in the risk model (OR 1.30, 95% CI 1.12–1.58, p=0.002).
+- 51 data quality discrepancies were identified and logged, of which 9 were 
+  rated High severity and 42 Medium severity.
+
+> **Note:** This audit was developed as a portfolio project to demonstrate 
+> clinical audit data management and analytical skills. The MIMIC-IV Demo 
+> dataset contains 100 patients and results are not statistically powered 
+> for clinical inference. The pipeline is designed to scale to the full 
+> MIMIC-IV dataset.
+
+
+# Background & Methods
+
+## Audit Scope
+
+This audit was designed to mirror the structure and objectives of ICNARC's 
+National Cardiac Arrest Audit (NCAA), which monitors the incidence, care, 
+and outcomes of in-hospital cardiac arrest across NHS hospitals in England, 
+Wales, and Northern Ireland. A secondary analysis of broader ICU outcomes 
+was conducted across the full cohort, modelled on ICNARC's Case Mix 
+Programme (CMP).
+
+## Dataset
+
+The **MIMIC-IV Clinical Database Demo (v2.2)** was used as the data source. 
+MIMIC-IV is a large, freely available database of de-identified health data 
+from patients admitted to critical care units at Beth Israel Deaconess 
+Medical Center between 2008 and 2019. The demo version contains 100 patients 
+and is openly available via PhysioNet without credentialing requirements.
+
+## Cohort Definition
+
+**Cardiac arrest cohort:**
+
+Patients were included if they had a recorded diagnosis of cardiac arrest 
+using the following codes:
+
+- ICD-10: I46, I460, I461, I462, I469
+- ICD-9: 4275
+
+Patients were excluded if aged under 18 or flagged with a high-severity 
+data quality discrepancy.
+
+**Full ICU cohort:**
+
+All patients with at least one ICU stay in the dataset were included in the 
+secondary analysis, subject to the same age and QC exclusion criteria.
+
+## Outcome Measures
+
+The primary outcome was **in-hospital mortality**, defined as 
+`hospital_expire_flag = 1` in the admissions table. Secondary outcomes 
+included ICU and hospital length of stay, care unit distribution, and 
+admission type breakdown.
+
+## Analytical Pipeline
+
+All data processing, quality control, cohort definition, and analysis were 
+conducted in R (v4.x) using a reproducible, version-controlled pipeline 
+maintained on GitHub. Data quality checks were modelled on ICNARC's 
+discrepancy resolution process, with all flagged records logged with a 
+severity rating and resolution status.
+
+# Data Quality Summary
+
+## Overview
+
+Data quality checks were conducted across all four core tables: `patients`, 
+`admissions`, `diagnoses_icd`, and `icustays`. Three categories of checks 
+were applied: completeness, plausibility, and consistency. All flagged 
+records were logged in a structured discrepancy log with a severity rating 
+and resolution status, replicating the query-raising process used in live 
+clinical audits.
+
+## Completeness
+
+```{r completeness-table}
+tibble(
+  Table = c("patients", "admissions", "admissions", "admissions", "admissions"),
+  Variable = c("dod", "deathtime", "edregtime / edouttime", 
+               "discharge_location", "marital_status"),
+  `% Missing` = c("69%", "94.5%", "33.8%", "15.3%", "4.4%"),
+  Interpretation = c(
+    "Expected — only populated for deaths",
+    "Expected — only populated for in-hospital deaths",
+    "Expected — not all patients admitted via emergency department",
+    "Flagged — unknown discharge destination, audit-relevant",
+    "Minor gap, low audit relevance"
+  )
+) %>% kable()
+```
+
+## Plausibility
+
+No implausible values were identified for age, ICU length of stay, or 
+admission/discharge dates. All 100 patients were adults (≥18), all ICU 
+lengths of stay were positive, and no discharge dates preceded admission dates.
+
+## Consistency
+
+Four records showed death time recorded after discharge time by a few hours. 
+Investigation revealed this reflects a known MIMIC data convention where 
+discharge time is recorded as midnight (00:00:00) and death time is logged 
+precisely later that evening. These were documented as known artefacts and 
+excluded from the discrepancy log.
+
+Nine records were flagged for ICU stay timestamps falling outside the 
+hospital admission window by more than six hours, likely reflecting 
+date-shift artefacts in the MIMIC de-identification process.
+
+## Discrepancy Log Summary
+
+```{r discrepancy-summary}
+discrepancy_log %>%
+  group_by(check_type, severity) %>%
+  summarise(n_records = n(), .groups = "drop") %>%
+  arrange(severity, check_type) %>%
+  kable(col.names = c("Check Type", "Severity", "Records Flagged"))
+```
+
+In a live audit setting, High severity discrepancies would be queried back 
+to the submitting unit for clarification or correction before inclusion in 
+analysis. Medium severity records would be flagged for review and included 
+with a data quality caveat.
+
+
+# Cardiac Arrest Cohort
+
+## Cohort identification
+
+```{r ca-cohort-flowchart}
+tibble(
+  Step = c(
+    "All MIMIC-IV Demo patients",
+    "Cardiac arrest ICD code identified",
+    "Excluded — under 18",
+    "Excluded — high severity QC flag",
+    "Final analysis cohort"
+  ),
+  N = c(100, 1, 0, 0, 1)
+) %>% kable(col.names = c("Step", "N"))
+```
+
+## Patient Profile
+
+```{r ca-patient}
+cohort_final %>%
+  select(
+    gender, anchor_age, admission_type, admission_location,
+    first_careunit, los, hospital_los, in_hospital_death, icd_code
+  ) %>%
+  mutate(
+    across(everything(), as.character),
+    in_hospital_death = ifelse(in_hospital_death == "TRUE", "Yes", "No")
+  ) %>%
+  rename(
+    Gender                = gender,
+    Age                   = anchor_age,
+    `Admission Type`      = admission_type,
+    `Admission Location`  = admission_location,
+    `Care Unit`           = first_careunit,
+    `ICU LOS (days)`      = los,
+    `Hospital LOS (days)` = hospital_los,
+    `In-Hospital Death`   = in_hospital_death,
+    `ICD Code`            = icd_code
+  ) %>%
+  pivot_longer(everything(), names_to = "Variable", values_to = "Value") %>%
+  kable()
+```
+
+## Findings & Limitations
+
+The single cardiac arrest case identified was a female patient aged 89, 
+admitted as an emergency via the emergency department and managed in the 
+Coronary Care Unit. In-hospital death was confirmed, with an ICU length 
+of stay of 4.9 days and hospital length of stay of 4.8 days. The arrest 
+was coded as ICD-10 I462 (cardiac arrest due to underlying cardiac condition).
+
+> **Limitation:** The MIMIC-IV Demo dataset contains only 100 patients, 
+> yielding a single cardiac arrest case. Outcome statistics for this cohort 
+> are not meaningful at this scale. The identification, validation, and 
+> reporting pipeline is fully operational and designed to scale to the full 
+> MIMIC-IV dataset, which contains over 300,000 hospital admissions.
+
+
+# Full ICU Cohort Analysis
+
+## Overview
+
+A secondary analysis was conducted across all 100 patients with at least 
+one ICU stay in the dataset, yielding 140 ICU stays. This analysis mirrors 
+the Case Mix Programme's approach to benchmarking critical care outcomes 
+across participating units.
+
+## In-Hospital Mortality
+
+```{r mortality}
+tibble(
+  Metric = c("Total patients", "In-hospital deaths", 
+             "Survivors", "Mortality rate"),
+  Value  = c("100", "13", "87", "13%")
+) %>% kable()
+```
+
+## ICU Length of Stay
+
+```{r los}
+tibble(
+  Metric = c("Mean ICU LOS (days)", "Median ICU LOS (days)",
+             "Minimum ICU LOS (days)", "Maximum ICU LOS (days)"),
+  Value  = c("3.68", "2.16", "0.02", "20.5")
+) %>% kable()
+```
+
+The median ICU length of stay was 2.16 days, with considerable variation 
+(range 0.02–20.5 days), reflecting the heterogeneity of case mix typical 
+of a mixed critical care population.
+
+## Breakdown by Care Unit
+
+```{r care-unit}
+care_unit_breakdown %>%
+  rename(
+    `Care Unit`       = first_careunit,
+    `ICU Stays`       = n_stays,
+    `Deaths`          = n_deaths,
+    `Mortality (%)`   = mortality_pct,
+    `Mean LOS (days)` = mean_los
+  ) %>%
+  kable()
+```
+
+The Coronary Care Unit recorded the highest mortality rate at 38.5%, 
+followed by the Neuro Surgical ICU at 33.3%. The Cardiac Vascular ICU 
+recorded zero deaths across 25 stays, likely reflecting a higher proportion 
+of elective surgical admissions with lower baseline risk.
+
+## Breakdown by Age Band
+
+```{r age-band}
+age_breakdown %>%
+  rename(
+    `Age Band`      = age_band,
+    `Patients`      = n_patients,
+    `Deaths`        = n_deaths,
+    `Mortality (%)` = mortality_pct
+  ) %>%
+  kable()
+```
+
+Mortality was highest in the 60–79 age band at 21.4%. The apparent lower 
+mortality in the 80 and over group (12.5%) may reflect survivor bias — 
+only the fittest older patients are admitted to ICU — and should be 
+interpreted with caution given the small sample size.
+
+## Breakdown by Admission Type
+
+```{r admission-type}
+admission_breakdown %>%
+  rename(
+    `Admission Type` = admission_type,
+    `Patients`       = n_patients,
+    `Deaths`         = n_deaths,
+    `Mortality (%)`  = mortality_pct
+  ) %>%
+  kable()
+```
+
+Elective and surgical same-day admissions recorded zero mortality, 
+consistent with their lower acuity. Direct emergency admissions had the 
+highest mortality at 50%, though this is based on only two patients and 
+should not be interpreted as a reliable estimate.
+
+# Risk-Adjusted Outcomes
+
+## Logistic Regression Model
+
+A logistic regression model was fitted to identify predictors of in-hospital 
+mortality across the full ICU cohort. Predictor variables were selected to 
+reflect those used in ICNARC's risk prediction models: age, sex, admission 
+type (emergency vs non-emergency), and ICU length of stay.
+
+```{r logistic-regression}
+model_results %>%
+  filter(term != "(Intercept)") %>%
+  mutate(
+    term = recode(term,
+      "age"       = "Age (per year)",
+      "emergency" = "Emergency admission",
+      "female"    = "Female sex",
+      "los"       = "ICU length of stay (per day)"
+    ),
+    `Significant` = ifelse(p.value < 0.05, "Yes", "No")
+  ) %>%
+  rename(
+    `Predictor`   = term,
+    `Odds Ratio`  = estimate,
+    `Std. Error`  = std.error,
+    `Z Statistic` = statistic,
+    `P Value`     = p.value,
+    `95% CI Low`  = conf.low,
+    `95% CI High` = conf.high
+  ) %>%
+  kable()
+```
+
+## Key Findings
+
+- **ICU length of stay** was the only statistically significant predictor 
+  of in-hospital death (OR 1.30, 95% CI 1.12–1.58, p=0.002). Each 
+  additional day in ICU was associated with a 30% increase in the odds 
+  of in-hospital death, likely reflecting greater illness severity in 
+  patients with prolonged stays.
+- **Age** showed a positive but non-significant association with mortality 
+  (OR 1.04, p=0.11), consistent with the expected direction but 
+  underpowered at this sample size.
+- **Emergency admission** was associated with higher odds of death 
+  (OR 2.91) but with very wide confidence intervals (0.61–22.5), 
+  reflecting insufficient statistical power.
+- **Female sex** showed a non-significant protective association 
+  (OR 0.36, p=0.198).
+
+## Observed vs Expected Mortality
+
+```{r oe-ratio}
+tibble(
+  Metric = c("Observed deaths", "Expected deaths", "O/E ratio"),
+  Value  = c("13", "13.0", "1.00")
+) %>% kable()
+```
+
+The observed-to-expected (O/E) ratio of 1.00 indicates perfect calibration 
+of the model on this dataset. In a live audit context, an O/E ratio 
+substantially above 1.0 would indicate higher-than-expected mortality and 
+trigger a quality improvement review, while a ratio below 1.0 would suggest 
+better-than-expected performance. This mirrors the Risk-Adjusted Mortality 
+Indicator (RAMI) used in ICNARC's Case Mix Programme.
+
+> **Note:** The O/E ratio here reflects in-sample model fit rather than 
+> external validation. In a scaled audit, the model would be trained on a 
+> derivation dataset and validated on a separate cohort.
+
+
+# Limitations & Recommendations
+
+## Limitations
+
+**Sample size:** The MIMIC-IV Demo dataset contains 100 patients, yielding 
+a single cardiac arrest case. All statistics derived from this cohort should 
+be interpreted as illustrative of the pipeline methodology rather than 
+clinically meaningful findings. The full MIMIC-IV dataset contains over 
+300,000 hospital admissions and would provide adequate statistical power 
+for a fully powered audit.
+
+**Single-centre data:** MIMIC-IV draws exclusively from Beth Israel 
+Deaconess Medical Center in Boston. A national audit such as ICNARC's NCAA 
+draws from hundreds of participating units across England, Wales, and 
+Northern Ireland, enabling meaningful inter-unit benchmarking. Single-centre 
+data cannot replicate this.
+
+**ICD coding limitations:** Cardiac arrest identification relied solely on 
+ICD diagnostic codes. In clinical practice, coding completeness varies 
+across units and cardiac arrest may be undercoded, particularly when it 
+occurs as a complication rather than a primary diagnosis. A live audit would 
+supplement ICD coding with direct data entry by clinical staff.
+
+**Risk model variables:** The logistic regression model included only four 
+predictor variables. ICNARC's own risk prediction models incorporate a much 
+richer set of physiological variables collected at ICU admission, including 
+acute physiology scores, ventilation status, and primary diagnosis category. 
+These variables were not included here due to the complexity of extracting 
+and cleaning chartevents data within the scope of this project.
+
+**Date shifting:** MIMIC-IV applies date shifting to all timestamps as part 
+of its de-identification process. This introduced apparent inconsistencies 
+in some timestamp comparisons, particularly between ICU stay times and 
+hospital admission windows. These were identified through QC checks and 
+documented in the discrepancy log.
+
+## Recommendations
+
+1. **Scale to full MIMIC-IV dataset** — applying this pipeline to the full 
+   dataset would yield a statistically powered cardiac arrest cohort and 
+   enable meaningful benchmarking analysis.
+
+2. **Enrich the risk model** — incorporating physiological variables from 
+   `chartevents` (e.g. GCS, heart rate, blood pressure at ICU admission) 
+   would produce a more clinically credible risk adjustment model, closer 
+   to ICNARC's RAMI methodology.
+
+3. **Automate discrepancy reporting** — in a live audit setting, the 
+   discrepancy log could be extended to generate automated query letters 
+   to participating units, flagging specific records and requesting 
+   clarification or correction.
+
+4. **Extend to NCAA variables** — where derivable from MIMIC-IV, 
+   additional NCAA variables such as arrest rhythm (shockable vs 
+   non-shockable) and ROSC status could be extracted from clinical notes 
+   or procedure codes to more closely replicate the full NCAA dataset 
+   specification.
+   
