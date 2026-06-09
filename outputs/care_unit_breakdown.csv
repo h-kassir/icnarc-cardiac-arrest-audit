@@ -1,0 +1,10 @@
+first_careunit,n_stays,n_deaths,mortality_pct,mean_los
+Medical Intensive Care Unit (MICU),29,6,20.7,4.02
+Surgical Intensive Care Unit (SICU),29,3,10.3,2.83
+Cardiac Vascular Intensive Care Unit (CVICU),25,0,0,2.22
+Medical/Surgical Intensive Care Unit (MICU/SICU),23,3,13,4.25
+Trauma SICU (TSICU),16,2,12.5,4.07
+Coronary Care Unit (CCU),13,5,38.5,5.43
+Neuro Surgical Intensive Care Unit (Neuro SICU),3,1,33.3,6.33
+Neuro Intermediate,1,0,0,0.87
+Neuro Stepdown,1,0,0,7.7

@@ -1,0 +1,5 @@
+age_band,n_patients,n_deaths,mortality_pct
+40-59,33,2,6.1
+60-79,42,9,21.4
+80 and over,16,2,12.5
+Under 40,9,0,0

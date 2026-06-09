@@ -1,0 +1,7 @@
+admission_type,n_patients,n_deaths,mortality_pct
+EW EMER.,46,6,13
+URGENT,22,4,18.2
+SURGICAL SAME DAY ADMISSION,14,0,0
+OBSERVATION ADMIT,11,2,18.2
+ELECTIVE,5,0,0
+DIRECT EMER.,2,1,50
