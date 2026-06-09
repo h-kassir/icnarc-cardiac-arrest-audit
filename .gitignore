@@ -3,3 +3,6 @@
 .RData
 .Ruserdata
 .positai
+outputs/
+outputs/
+!outputs/discrepancy_log.csv
