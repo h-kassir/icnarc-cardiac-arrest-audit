@@ -118,6 +118,6 @@ rmarkdown::render("audit_report.Rmd")
 ## Author
 
 **Hussein Kassir**  
-MSc Genomic Medicine (Distinction), Queen Mary University of London  
+MSc Genomic Medicine , Queen Mary University of London  
 BSc Pharmacy, Lebanese International University  
 [GitHub](https://github.com/h-kassir) | h.kassir99@gmail.com
